@@ -187,8 +187,8 @@ def run(
     if isinstance(names, (list, tuple)):  # old format
         names = dict(enumerate(names))
     class_map = coco80_to_coco91_class() if is_coco else list(range(1000))
-    s = ('%22s' + '%11s' * 6) % ('Class', 'Images', 'Instances', 'P', 'R', 'mAP50', 'mAP50-95')
-    tp, fp, p, r, f1, mp, mr, map50, ap50, map = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+    s = ('%22s' + '%11s' * 7) % ('Class', 'Images', 'Instances', 'P', 'R', 'mAP50', 'mAP75', 'mAP50-95')
+    tp, fp, p, r, f1, mp, mr, map50, map75, ap50, map = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
     dt = Profile(), Profile(), Profile()  # profiling times
     loss = torch.zeros(3, device=device)
     jdict, stats, ap, ap_class = [], [], [], []
@@ -273,13 +273,13 @@ def run(
     stats = [torch.cat(x, 0).cpu().numpy() for x in zip(*stats)]  # to numpy
     if len(stats) and stats[0].any():
         tp, fp, p, r, f1, ap, ap_class = ap_per_class(*stats, plot=plots, save_dir=save_dir, names=names)
-        ap50, ap = ap[:, 0], ap.mean(1)  # AP@0.5, AP@0.5:0.95
-        mp, mr, map50, map = p.mean(), r.mean(), ap50.mean(), ap.mean()
+        ap50, ap75, ap = ap[:, 0], ap[:, 5], ap.mean(1)  # AP@0.5, AP@0.5:0.95
+        mp, mr, map50, map75, map = p.mean(), r.mean(), ap50.mean(), ap75.mean(), ap.mean()
     nt = np.bincount(stats[3].astype(int), minlength=nc)  # number of targets per class
 
     # Print results
-    pf = '%22s' + '%11i' * 2 + '%11.3g' * 4  # print format
-    LOGGER.info(pf % ('all', seen, nt.sum(), mp, mr, map50, map))
+    pf = '%22s' + '%11i' * 2 + '%11.3g' * 5  # print format
+    LOGGER.info(pf % ('all', seen, nt.sum(), mp, mr, map50, map75, map))
     if nt.sum() == 0:
         LOGGER.warning(f'WARNING ⚠️ no labels found in {task} set, can not compute metrics without labels')
 
@@ -333,7 +333,7 @@ def run(
     maps = np.zeros(nc) + map
     for i, c in enumerate(ap_class):
         maps[c] = ap[i]
-    return (mp, mr, map50, map, *(loss.cpu() / len(dataloader)).tolist()), maps, t
+    return (mp, mr, map50, map75, map, *(loss.cpu() / len(dataloader)).tolist()), maps, t
 
 
 def parse_opt():

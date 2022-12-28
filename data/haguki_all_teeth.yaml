@@ -1,0 +1,6 @@
+train: ../datasets/haguki_all_teeth/images/train/
+val: ../datasets/haguki_all_teeth/images/val/
+
+nc: 1
+
+names: ['tooth']
