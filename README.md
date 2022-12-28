@@ -1,3 +1,13 @@
+# Changes made to the original YoloV5
+
+This fork just adds displaying of mAP@0.75 results and small contribution of that metric to the selection of the best model.
+
+The original way of selecting the best model is a weighted score of 0.1 for mAP@0.5 and 0.9 for mAP50-95.
+
+In this fork, the weights are 0.05 for mAP@0.5, 0.15 for mAP@0.75 and 0.8 for mAP50-95.
+
+# Original README
+
 <div align="center">
   <p>
     <a align="center" href="https://ultralytics.com/yolov5" target="_blank">
